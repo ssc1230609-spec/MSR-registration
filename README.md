@@ -16,8 +16,10 @@ Mamba环境配准可参考教程https://blog.csdn.net/qq_45645368/article/detail
 The full data processing pipeline and dataset will also be made publicly available.Please click  [Here](https://pan.quark.cn/s/a5ad35418ca9?pwd=YRr4)
 to access the  R-D-Reg dataset.
 
+## HN [nnU-Net](https://github.com/mic-dkfz/nnunet) training weights 
+We will store the weight in the cloud drive.
+## TH [TotalSegmentator](https://github.com/wasserth/totalsegmentator) weights 
+We will store the weight in the cloud drive.
 ## Quark Cloud Drive
     https://pan.quark.cn/s/a5ad35418ca9?pwd=YRr4
-## HN [nnU-Net](https://github.com/mic-dkfz/nnunet) training weights 
 
-## TH [TotalSegmentator](https://github.com/wasserth/totalsegmentator) weights 
