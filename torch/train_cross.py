@@ -34,11 +34,6 @@ implied. See the License for the specific language governing permissions and lim
 License.
 """
 import setproctitle
-
-import faulthandler
-# 在import之后直接添加以下启用代码即可
-faulthandler.enable()
-# 后边正常写你的代码
 import numpy as np
 import os
 import pdb
@@ -143,7 +138,15 @@ parser.add_argument('--lambda', type=float, dest='weight', default=1,
 parser.add_argument('--ignore-label', type=int, nargs='+', default=[0],
                     help='list of ignorable labels')#要忽略的标签列表
 parser.add_argument('--cl', type=float, default=0.0, help='whether to use contrastive loss and set its weight')#对比损失权重
-
+# 数据增强参数
+parser.add_argument('--use-augmentation', action='store_true', help='enable data augmentation')
+parser.add_argument('--aug-rotation', type=float, default=15, help='rotation range for augmentation (degrees)')
+parser.add_argument('--aug-scale-min', type=float, default=0.9, help='minimum scale factor')
+parser.add_argument('--aug-scale-max', type=float, default=1.1, help='maximum scale factor')
+parser.add_argument('--aug-flip-prob', type=float, default=0.5, help='probability of flipping')
+parser.add_argument('--aug-spatial-prob', type=float, default=0.8, help='probability of applying spatial augmentation')
+parser.add_argument('--aug-intensity', action='store_true', help='enable intensity augmentation')
+parser.add_argument('--aug-intensity-prob', type=float, default=0.5, help='probability of applying intensity augmentation')
 
 # 局部刚性配准参数
 parser.add_argument('--use-local-rigid', action='store_true', help='enable local rigid registration for each vertebra')
