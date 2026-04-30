@@ -1,150 +1,217 @@
 """
 A： N4 bias field correction
-N4偏置场矫正 - 用于MRI数据
-使用SimpleITK的N4BiasFieldCorrectionImageFilter进行偏置场矫正
+"""
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+N4 Bias Field Correction for MRI (SimpleITK)
+
+Features:
+- N4 bias field correction
+- Otsu-based automatic mask generation
+- Shrink factor acceleration
+- Single-case and batch processing
+- Logging + CLI support
+
+Author:zbh
 """
 
 import os
-import SimpleITK as sitk
+import argparse
+import logging
+import traceback
 from pathlib import Path
+from typing import Optional, List
+
+import SimpleITK as sitk
 from tqdm import tqdm
 
 
-def n4_bias_correction(input_path, output_path, mask=None, shrink_factor=4, num_iterations=[50, 50, 50, 50]):
+# =========================
+# Logging
+# =========================
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] %(levelname)s: %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+
+# =========================
+# Core Function
+# =========================
+def n4_bias_correction(
+    input_path: str,
+    output_path: str,
+    mask_path: Optional[str] = None,
+    shrink_factor: int = 4,
+    num_iterations: List[int] = [50, 50, 50, 50]
+) -> bool:
     """
-    对MRI图像进行N4偏置场矫正
-    
-    Parameters:
-    -----------
-    input_path : str
-        输入MRI图像路径
-    output_path : str
-        输出矫正后图像路径
-    mask : SimpleITK.Image, optional
-        掩码图像（可选）
-    shrink_factor : int
-        收缩因子，用于加速计算（默认4）
-    num_iterations : list
-        每个分辨率级别的迭代次数（默认[50, 50, 50, 50]）
-    
+    Perform N4 bias field correction on MRI.
+
+    Args:
+        input_path: input MRI path
+        output_path: output corrected MRI path
+        mask_path: optional mask path
+        shrink_factor: downsampling factor for speed
+        num_iterations: iteration per level
+
     Returns:
-    --------
-    bool : 是否成功
+        success flag
     """
+
     try:
-        # 读取输入图像
-        input_image = sitk.ReadImage(input_path, sitk.sitkFloat32)
-        
-        # 如果没有提供mask，创建一个基于Otsu阈值的mask
-        if mask is None:
-            # 使用Otsu阈值自动生成mask
-            mask_image = sitk.OtsuThreshold(input_image, 0, 1, 200)
+        logger.info(f"Processing: {input_path}")
+
+        # Read image
+        image = sitk.ReadImage(input_path, sitk.sitkFloat32)
+
+        # Mask
+        if mask_path is None:
+            mask_image = sitk.OtsuThreshold(image, 0, 1, 200)
         else:
-            mask_image = mask
-        
-        # 设置收缩因子以加速计算
+            mask_image = sitk.ReadImage(mask_path, sitk.sitkUInt8)
+
+        # Shrink for speed
         if shrink_factor > 1:
-            input_image = sitk.Shrink(input_image, [shrink_factor] * input_image.GetDimension())
-            mask_image = sitk.Shrink(mask_image, [shrink_factor] * mask_image.GetDimension())
-        
-        # 创建N4偏置场矫正滤波器
+            shrink = [shrink_factor] * image.GetDimension()
+            image_shrunk = sitk.Shrink(image, shrink)
+            mask_shrunk = sitk.Shrink(mask_image, shrink)
+        else:
+            image_shrunk = image
+            mask_shrunk = mask_image
+
+        # N4 Corrector
         corrector = sitk.N4BiasFieldCorrectionImageFilter()
-        
-        # 设置参数
         corrector.SetMaximumNumberOfIterations(num_iterations)
-        corrector.SetConvergenceThreshold(0.001)
-        
-        # 执行矫正
-        corrected_image = corrector.Execute(input_image, mask_image)
-        
-        # 如果使用了收缩，需要恢复到原始尺寸
+        corrector.SetConvergenceThreshold(1e-3)
+
+        logger.info("Running N4 correction...")
+        corrected_shrunk = corrector.Execute(image_shrunk, mask_shrunk)
+
+        # Recover full resolution
         if shrink_factor > 1:
-            # 读取原始图像用于恢复尺寸
-            original_image = sitk.ReadImage(input_path, sitk.sitkFloat32)
-            
-            # 获取偏置场
-            log_bias_field = corrector.GetLogBiasFieldAsImage(input_image)
-            
-            # 将偏置场恢复到原始尺寸
-            log_bias_field = sitk.Resample(log_bias_field, original_image)
-            
-            # 应用偏置场到原始图像
-            bias_field = sitk.Exp(log_bias_field)
-            corrected_image = original_image / bias_field
-        
-        # 保存矫正后的图像
-        sitk.WriteImage(corrected_image, output_path)
-        
+            logger.info("Resampling bias field to original resolution...")
+
+            log_bias = corrector.GetLogBiasFieldAsImage(image_shrunk)
+            log_bias = sitk.Resample(log_bias, image)
+
+            bias_field = sitk.Exp(log_bias)
+            corrected_full = image / bias_field
+        else:
+            corrected_full = corrected_shrunk
+
+        # Save
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        sitk.WriteImage(corrected_full, output_path)
+
+        logger.info(f"Saved: {output_path}")
         return True
-        
+
     except Exception as e:
-        print(f"处理 {input_path} 时出错: {str(e)}")
+        logger.error(f"Failed: {input_path}")
+        logger.error(str(e))
+        logger.debug(traceback.format_exc())
         return False
 
 
-def process_mri_directory(input_dir, output_dir, overwrite=False):
+# =========================
+# Batch Processing
+# =========================
+def batch_process(
+    input_dir: str,
+    output_dir: str,
+    overwrite: bool = False
+):
     """
-    批量处理MRI目录中的所有文件
-    
-    Parameters:
-    -----------
-    input_dir : str
-        输入MRI目录路径
-    output_dir : str
-        输出目录路径
-    overwrite : bool
-        是否覆盖已存在的文件
+    Batch N4 correction for MRI directory.
     """
-    # 创建输出目录
+
+    input_dir = Path(input_dir)
+    output_dir = Path(output_dir)
+
     os.makedirs(output_dir, exist_ok=True)
-    
-    # 获取所有MRI文件
-    input_path = Path(input_dir)
-    mri_files = sorted(list(input_path.glob("*.nii.gz")))
-    
-    print(f"找到 {len(mri_files)} 个MRI文件")
-    print(f"输入目录: {input_dir}")
-    print(f"输出目录: {output_dir}")
-    print("-" * 60)
-    
-    success_count = 0
-    fail_count = 0
-    skip_count = 0
-    
-    # 处理每个文件
-    for mri_file in tqdm(mri_files, desc="N4偏置场矫正"):
-        # 构建输出路径
-        output_path = os.path.join(output_dir, mri_file.name)
-        
-        # 检查是否已存在
-        if os.path.exists(output_path) and not overwrite:
-            print(f"跳过 {mri_file.name} (已存在)")
-            skip_count += 1
+
+    mri_files = sorted(list(input_dir.glob("*.nii.gz")))
+
+    logger.info(f"Found {len(mri_files)} MRI files")
+    logger.info(f"Input: {input_dir}")
+    logger.info(f"Output: {output_dir}")
+
+    success, fail, skip = 0, 0, 0
+
+    for mri_file in tqdm(mri_files, desc="N4 Correction"):
+        output_path = output_dir / mri_file.name
+
+        if output_path.exists() and not overwrite:
+            skip += 1
             continue
-        
-        # 执行N4矫正
-        if n4_bias_correction(str(mri_file), output_path):
-            success_count += 1
+
+        ok = n4_bias_correction(
+            input_path=str(mri_file),
+            output_path=str(output_path)
+        )
+
+        if ok:
+            success += 1
         else:
-            fail_count += 1
-    
-    # 打印统计信息
-    print("\n" + "=" * 60)
-    print(f"处理完成!")
-    print(f"成功: {success_count} 个文件")
-    print(f"失败: {fail_count} 个文件")
-    print(f"跳过: {skip_count} 个文件")
-    print("=" * 60)
+            fail += 1
+
+    logger.info("=" * 50)
+    logger.info(f"Done")
+    logger.info(f"Success: {success}")
+    logger.info(f"Fail: {fail}")
+    logger.info(f"Skip: {skip}")
+    logger.info("=" * 50)
+
+
+# =========================
+# CLI
+# =========================
+def main():
+    parser = argparse.ArgumentParser(
+        description="N4 Bias Field Correction for MRI"
+    )
+
+    # Single case
+    parser.add_argument('--input', type=str, help='Input MRI path')
+    parser.add_argument('--output', type=str, help='Output MRI path')
+    parser.add_argument('--mask', type=str, help='Mask path (optional)')
+
+    # Batch
+    parser.add_argument('--input-dir', type=str, help='Input directory')
+    parser.add_argument('--output-dir', type=str, help='Output directory')
+
+    # Params
+    parser.add_argument('--shrink', type=int, default=4)
+    parser.add_argument('--overwrite', action='store_true')
+
+    args = parser.parse_args()
+
+    # ---- Single ----
+    if args.input and args.output:
+        n4_bias_correction(
+            input_path=args.input,
+            output_path=args.output,
+            mask_path=args.mask,
+            shrink_factor=args.shrink
+        )
+        return
+
+    # ---- Batch ----
+    if args.input_dir and args.output_dir:
+        batch_process(
+            input_dir=args.input_dir,
+            output_dir=args.output_dir,
+            overwrite=args.overwrite
+        )
+        return
+
+    logger.error("Invalid arguments. Use single or batch mode.")
 
 
 if __name__ == "__main__":
-    # 设置输入输出路径
-    input_mri_dir = r"./data/xxxMRI"  # 替换为你的MRI数据目录路径
-    output_mri_dir = r"./data/xxxMRI_N4corrected"
-    
-    # 执行批量处理
-    process_mri_directory(
-        input_dir=input_mri_dir,
-        output_dir=output_mri_dir,
-        overwrite=False  # 设置为True可以覆盖已存在的文件
-    )
+    main()
