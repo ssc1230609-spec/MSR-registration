@@ -3,10 +3,7 @@
 import setproctitle
 
 
-import faulthandler
-# 在import之后直接添加以下启用代码即可
-faulthandler.enable()
-# 后边正常写你的代码
+
 import numpy as np
 
 import os
