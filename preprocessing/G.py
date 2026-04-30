@@ -9,6 +9,8 @@ Uniformly sized key plot elements
 
 - Keep label values ​​unchanged
 """
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import os
 import re
