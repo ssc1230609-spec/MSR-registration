@@ -2,6 +2,9 @@
 F：Mask-guided adaptive cropping
 Author: zbh
 """
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import os
 import nibabel as nib
 import numpy as np
