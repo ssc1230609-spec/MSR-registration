@@ -14,7 +14,7 @@ Features:
 - Boundary-safe cropping
 - Logging + CLI support
 
-Author: Your Name
+Author: zbh
 """
 
 import os
