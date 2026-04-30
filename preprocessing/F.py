@@ -1,5 +1,6 @@
 """
 F：Mask-guided adaptive cropping
+Author: zbh
 """
 import os
 import nibabel as nib
