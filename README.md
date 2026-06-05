@@ -1,6 +1,53 @@
 # MSR-registration
 Spine CT–MRI Rigid–Deformable Hybrid Registration
 
+## Project Structure
+```
+MSR-registration-main/
+├── msr/                            # 核心代码库
+│   ├── __init__.py
+│   ├── augmentation.py             # 数据增强
+│   ├── generators.py               # 数据生成器
+│   ├── py/                         # Python 通用工具
+│   │   ├── __init__.py
+│   │   └── utils.py
+│   ├── tf/                         # TensorFlow 实现
+│   │   ├── __init__.py
+│   │   ├── layers.py
+│   │   ├── losses.py
+│   │   ├── networks.py
+│   │   └── utils/
+│   │       ├── __init__.py
+│   │       └── utils.py
+│   └── torch/                      # PyTorch 实现
+│       ├── __init__.py
+│       ├── LocalRigidNet.py        # 局部刚性配准网络
+│       ├── TransMorph.py           # TransMorph 配准模型
+│       ├── XMorpher.py             # XMorpher 配准模型
+│       ├── configs_TransMorph.py   # TransMorph 配置
+│       ├── layers.py
+│       ├── losses.py
+│       ├── mamba.py                # Mamba 模块
+│       ├── modelio.py              # 模型读写
+│       ├── networks.py
+│       ├── node.py                 # 节点定义
+│       └── utils.py
+├── preprocessing/                  # 数据预处理脚本 (A–G)
+│   ├── A.py
+│   ├── B.py
+│   ├── C.py
+│   ├── D.py
+│   ├── E.py
+│   ├── F.py
+│   └── G.py
+├── torch/                          # 训练与测试入口
+│   ├── train_cross.py              # 训练脚本
+│   └── test_cross.py               # 测试脚本
+├── requirements.txt                # 依赖列表
+├── LICENSE
+└── README.md
+```
+
 # Tutorial
 Mamba环境配置可参考教程https://blog.csdn.net/qq_45645368/article/details/141031972
 
