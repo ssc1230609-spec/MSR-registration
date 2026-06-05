@@ -10,9 +10,9 @@ https://github.com/Guo-Stone/MambaMorph
 https://arxiv.org/abs/2604.27654
 
 ## train
-python train.py --gpu --epochs --batch-size  --model --use-local-rigid --num-vertebrae
+    python train.py --gpu --epochs --batch-size  --model --use-local-rigid --num-vertebrae
 ## test
-python test.py --gpu --load-model --model --output-dir --use-local-rigid --num-vertebrae
+    python test.py --gpu --load-model --model --output-dir --use-local-rigid --num-vertebrae
 
 ## Framework
 <img width="1865" height="1804" alt="xiu配色+field" src="https://github.com/user-attachments/assets/69ebb608-fd95-4b3c-9d4c-ff80a031ec50" />
