@@ -1,5 +1,5 @@
 # MSR-registration
-CT-MRI registration
+Spinal CT–MRI Rigid–Deformable Hybrid Registration
 
 # Tutorial
 Mamba环境配准可参考教程https://blog.csdn.net/qq_45645368/article/details/141031972
