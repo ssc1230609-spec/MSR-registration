@@ -22,9 +22,9 @@ MSR-registration-main/
 │   └── torch/                      # PyTorch 实现
 │       ├── __init__.py
 │       ├── LocalRigidNet.py        # 局部刚性配准网络
-│       ├── TransMorph.py           # TransMorph 配准模型
-│       ├── XMorpher.py             # XMorpher 配准模型
-│       ├── configs_TransMorph.py   # TransMorph 配置
+│       ├── TransMorph.py           # 可变形配准模型选择
+│       ├── XMorpher.py           
+│       ├── configs_TransMorph.py   # Morph配置
 │       ├── layers.py
 │       ├── losses.py
 │       ├── mamba.py                # Mamba 模块
