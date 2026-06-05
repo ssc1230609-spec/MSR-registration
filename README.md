@@ -26,7 +26,7 @@ MSR-registration-main/
 │       ├── XMorpher.py           
 │       ├── configs_TransMorph.py   # Morph配置
 │       ├── layers.py
-│       ├── losses.py
+│       ├── losses.py               # 损失函数选择
 │       ├── mamba.py                # Mamba 模块
 │       ├── modelio.py              # 模型读写
 │       ├── networks.py
