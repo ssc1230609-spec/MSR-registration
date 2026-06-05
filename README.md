@@ -8,7 +8,9 @@ Mamba环境配置可参考教程https://blog.csdn.net/qq_45645368/article/detail
 https://github.com/Guo-Stone/MambaMorph
 ## Paper
 https://arxiv.org/abs/2604.27654
-
+## Environment Setup
+    # Install dependencies
+    plp Install -n requirements. Lxt
 ## train
     python train_cross.py --gpu --epochs --batch-size  --model --use-local-rigid --num-vertebrae
 ## test
