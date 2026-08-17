@@ -80,5 +80,4 @@ We will store the weight in the cloud drive.
 ## 2.TH [TotalSegmentator](https://github.com/wasserth/totalsegmentator) weights 
 We will store the weight in the cloud drive.
 ## 3.Quark Cloud Drive
-    https://pan.quark.cn/s/a5ad35418ca9?pwd=YRr4
-
+https://pan.quark.cn/s/b794974d16c0?pwd=ZLJj
