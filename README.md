@@ -79,5 +79,4 @@ to access the  R-D-Reg dataset.
 We will store the weight in the cloud drive.
 ## 2.TH [TotalSegmentator](https://github.com/wasserth/totalsegmentator) weights 
 We will store the weight in the cloud drive.
-## 3.Quark Cloud Drive
-https://pan.quark.cn/s/b794974d16c0?pwd=ZLJj
+## 3.数据集请邮箱联系。
